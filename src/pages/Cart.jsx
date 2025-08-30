@@ -1,12 +1,12 @@
 import { useCart } from "../cart/CartContext";
 import { useAuth } from "../auth/AuthContext";
+import FeesPanel from "../components/FeesPanel";
 
 export default function Cart() {
   const { state, dispatch } = useCart();
   const { user } = useAuth();
 
   const items = state.items;
-
   const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
 
   const updateQty = (item, qty) => {
@@ -16,6 +16,13 @@ export default function Cart() {
       dispatch({ type: "UPDATE_QTY", payload: { id: item.id, qty } });
     }
   };
+
+  // Calculate grand total including fees
+  const grandTotal =
+    subtotal +
+    state.fees.delivery +
+    state.fees.packaging +
+    state.fees.tip;
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -44,7 +51,7 @@ export default function Cart() {
               key={item.productId}
               className="flex items-center justify-between bg-white rounded-lg shadow-sm p-3"
             >
-              {/* Left: Image + Info */}
+              {/* Left */}
               <div className="flex items-center gap-3">
                 <img
                   src={item.image}
@@ -59,7 +66,7 @@ export default function Cart() {
                 </div>
               </div>
 
-              {/* Right: Qty Stepper + Price */}
+              {/* Right */}
               <div className="flex items-center gap-3">
                 <div className="flex items-center bg-green-50 rounded-full shadow-sm">
                   <button
@@ -87,14 +94,43 @@ export default function Cart() {
         )}
       </div>
 
-      {/* Sticky Checkout Footer */}
       {items.length > 0 && (
-        <div className="bg-white px-4 py-3 shadow-inner">
-          <div className="flex justify-between font-semibold text-gray-800 text-base mb-2">
-            <span>Total</span>
-            <span>₹{subtotal}</span>
+        <div className="bg-white px-4 py-3 border-t shadow-[0_-2px_6px_rgba(0,0,0,0.05)] 
+                pb-[calc(env(safe-area-inset-bottom)+130px)]">
+          <h2 className="font-semibold text-gray-800 mb-2">Bill details</h2>
+
+          <div className="flex justify-between text-sm text-gray-600 py-1">
+            <span>Items total</span>
+            <span className="text-gray-800">₹{subtotal}</span>
           </div>
-          <button className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold active:scale-95 transition">
+
+          <div className="flex justify-between text-sm text-gray-600 py-1">
+            <span>Delivery charge</span>
+            <span className="text-gray-800">₹{state.fees.delivery}</span>
+          </div>
+
+          <div className="flex justify-between text-sm text-gray-600 py-1">
+            <span>Packaging charge</span>
+            <span className="text-gray-800">₹{state.fees.packaging}</span>
+          </div>
+
+          <div className="flex justify-between text-sm text-gray-600 py-1">
+            <span>Tip</span>
+            <span className="text-gray-800">₹{state.fees.tip}</span>
+          </div>
+
+          <div className="flex justify-between font-bold text-base border-t pt-2 mt-2">
+            <span>Grand total</span>
+            <span>
+              ₹
+              {subtotal +
+                state.fees.delivery +
+                state.fees.packaging +
+                state.fees.tip}
+            </span>
+          </div>
+
+          <button className="w-full mt-3 bg-[#00C853] text-white py-3 rounded-lg font-semibold active:scale-95 transition">
             Checkout
           </button>
         </div>

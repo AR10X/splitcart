@@ -10,7 +10,7 @@ import { Home, ShoppingCart, User } from "lucide-react";
 export default function BottomBar({ current = "home", onNav = () => {}, cartCount = 0 }) {
   return (
     <div className="fixed bottom-0 inset-x-0 z-40 pointer-events-none">
-      <div className="relative h-[100px] pb-[env(safe-area-inset-bottom)]">
+      <div className="relative h-[70px] pb-[env(safe-area-inset-bottom)]">
         {/* Top scoop with a notch for the floating Cart */}
         <svg
           className="absolute -top-7 left-0 right-0 w-full h-12"
@@ -28,7 +28,7 @@ export default function BottomBar({ current = "home", onNav = () => {}, cartCoun
         <div className="absolute inset-0 bg-[#00C853] rounded-t-[22px] shadow-[0_-6px_18px_rgba(0,0,0,0.08)]" />
 
         {/* Side tabs (Home & Profile) */}
-        <div className="relative h-full flex items-end justify-between px-10 pb-4 pointer-events-auto">
+        <div className="relative h-full flex items-end justify-between px-10 pb-2 pointer-events-auto">
           <Tab
             active={current === "home"}
             label="Home"
