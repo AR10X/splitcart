@@ -1,38 +1,84 @@
 import { createContext, useContext, useReducer } from "react";
-import { v4 as uuidv4 } from "uuid";
+
+// --------------------
+// Initial State
+// --------------------
+const initialState = {
+  items: [], // { id, sku, name, price, ownerId, ownerName, qty }
+};
+
+// --------------------
+// Reducer
+// --------------------
+function cartReducer(state, action) {
+  switch (action.type) {
+    case "ADD_ITEM": {
+        const { productId, ownerId } = action.payload;
+        const existing = state.items.find(
+            (i) => i.productId === productId && i.ownerId === ownerId
+        );
+
+        if (existing) {
+            return {
+            ...state,
+            items: state.items.map((i) =>
+                i === existing ? { ...i, qty: i.qty + 1 } : i
+            ),
+            };
+        }
+
+        return {
+            ...state,
+            items: [
+            ...state.items,
+            { ...action.payload, id: Date.now().toString(), qty: 1 },
+            ],
+        };
+        }
 
 
-const Ctx = createContext(null); 
-export const useCart = () => useContext(Ctx); 
- 
-const initial = { 
-  room: { 
-    roomId: uuidv4(), 
-    code: "ABCD12", 
-    hostId: null, 
-    members: [], 
-    items: [], 
-    fees: { delivery: 0, packaging: 0, tip: 0 }, 
-    status: "BUILDING" 
-  } 
-}; 
- 
-function reducer(state, action) { 
-  switch (action.type) { 
-    case "ADD_ITEM": { 
-      const { skuId, ownerId, name, price } = action.payload; 
-      const items = [...state.room.items]; 
-      const idx = items.findIndex(i => i.skuId === skuId && i.ownerId === ownerId); 
-      if (idx >= 0) items[idx] = { ...items[idx], qty: items[idx].qty + 1 }; 
-      else items.push({ skuId, name, price, qty: 1, ownerId, ownerName: 
-action.payload.ownerName, ownerPhone: action.payload.ownerPhone }); 
-      return { ...state, room: { ...state.room, items } }; 
-    } 
-    default: return state; 
-  } 
-} 
- 
-export function CartProvider({ children }) { 
-  const value = useReducer(reducer, initial); 
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>; 
+    case "UPDATE_QTY": {
+      return {
+        ...state,
+        items: state.items.map((i) =>
+          i.id === action.payload.id ? { ...i, qty: action.payload.qty } : i
+        ),
+      };
+    }
+
+    case "REMOVE_ITEM": {
+      return {
+        ...state,
+        items: state.items.filter((i) => i.id !== action.payload.id),
+      };
+    }
+
+    case "CLEAR_CART": {
+      return { ...state, items: [] };
+    }
+
+    default:
+      return state;
+  }
 }
+
+// --------------------
+// Context + Hook
+// --------------------
+const CartCtx = createContext(null);
+
+export function CartProvider({ children }) {
+  const [state, dispatch] = useReducer(cartReducer, initialState);
+
+  return (
+    <CartCtx.Provider value={{ state, dispatch }}>
+      {children}
+    </CartCtx.Provider>
+  );
+}
+
+export const useCart = () => {
+  const ctx = useContext(CartCtx);
+  if (!ctx) throw new Error("useCart must be used within CartProvider");
+  return ctx;
+};

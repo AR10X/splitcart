@@ -1,6 +1,32 @@
-import { Star } from "lucide-react"; // optional, or use emoji ⭐
+import { useCart } from "../cart/CartContext";
+import { useAuth } from "../auth/AuthContext";
 
-export default function ProductCard({ item, onAdd }) {
+export default function ProductCard({ item }) {
+  const { state, dispatch } = useCart();
+  const { user } = useAuth();
+
+  const ownerId = user?.uid || "test-user";
+  const ownerName = user?.displayName || user?.phoneNumber || "Test User";
+
+  // Find if item already exists in cart
+  const cartItem = state.items.find(
+    (i) => i.productId === item.id && i.ownerId === ownerId
+  );
+
+  const addToCart = () => {
+    dispatch({
+      type: "ADD_ITEM",
+      payload: {
+        productId: item.id,
+        title: item.title,
+        price: item.price,
+        image: item.image,
+        ownerId,
+        ownerName,
+      },
+    });
+  };
+
   return (
     <div className="rounded-2xl bg-white p-3 shadow-sm border border-gray-100 hover:shadow-md transition">
       {/* Product Image */}
@@ -14,7 +40,9 @@ export default function ProductCard({ item, onAdd }) {
       <div className="text-xs text-gray-400 mb-1">{item.category}</div>
 
       {/* Title */}
-      <div className="font-semibold leading-tight line-clamp-2">{item.title}</div>
+      <div className="font-semibold leading-tight line-clamp-2">
+        {item.title}
+      </div>
 
       {/* Rating + Delivery */}
       <div className="mt-1 flex items-center justify-between text-xs text-gray-500">
@@ -26,14 +54,19 @@ export default function ProductCard({ item, onAdd }) {
         <div>{item.deliveryTime}</div>
       </div>
 
-      {/* Price + Add button */}
+      {/* Price + Add */}
       <div className="mt-2 flex items-center justify-between">
         <span className="text-green-700 font-semibold">₹{item.price}</span>
         <button
-          onClick={() => onAdd(item)}
-          className="px-3 py-1.5 text-sm rounded-full bg-green-600 text-white active:scale-95 transition"
+          onClick={addToCart}
+          className={`px-3 py-1.5 text-sm rounded-full active:scale-95 transition 
+            ${
+              cartItem && cartItem.qty > 0
+                ? "bg-white text-green-600 border border-green-600"
+                : "bg-green-600 text-white"
+            }`}
         >
-          Add
+          {cartItem && cartItem.qty > 0 ? "Added" : "Add"}
         </button>
       </div>
     </div>
