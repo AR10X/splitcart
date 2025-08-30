@@ -11,20 +11,28 @@ export default function Home() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("all");
 
-  function handleAdd(item){
+  function handleAdd(item) {
     // Day-1: just prove ownership (Day-2 we dispatch to CartContext)
     console.log("ADD_ITEM", {
-      skuId: item.id, name: item.name, price: item.price,
-      ownerId: user.id, ownerPhone: user.phone, ownerName: user.name || "",
+      skuId: item.id,
+      name: item.title, // ✅ use title, not name
+      price: item.price,
+      ownerId: user.id,
+      ownerPhone: user.phone,
+      ownerName: user.name || "",
       qty: 1
     });
   }
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
-    return data.filter(it => {
-      const matchQ = !query || it.name.toLowerCase().includes(query);
-      const matchCat = cat === "all" || (it.cat || "misc") === cat;
+    return data.filter((it) => {
+      const matchQ =
+        !query ||
+        it.title.toLowerCase().includes(query) || // ✅ use title
+        (it.category || "").toLowerCase().includes(query);
+
+      const matchCat = cat === "all" || it.category === cat; // ✅ compare to category name
       return matchQ && matchCat;
     });
   }, [q, cat]);
@@ -37,7 +45,7 @@ export default function Home() {
           <div className="flex items-center justify-between mb-3">
             <div className="text-sm text-gray-500">Welcome back,</div>
             <div className="w-8 h-8 rounded-full bg-green-100 grid place-items-center text-green-700 font-semibold">
-              {(user?.name || user?.phone || "U").slice(0,1).toUpperCase()}
+              {(user?.name || user?.phone || "U").slice(0, 1).toUpperCase()}
             </div>
           </div>
 
@@ -67,7 +75,7 @@ export default function Home() {
       {/* “Recommended for you” */}
       <Section title="Recommended for you">
         <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
-          {filtered.map(it => (
+          {filtered.map((it) => (
             <ProductCard key={it.id} item={it} onAdd={handleAdd} />
           ))}
         </div>

@@ -1,8 +1,58 @@
 [
-  { "id": "g-1", "name": "Milk 1L", "brand": "Daily", "cat": "dairy", "price": 52, "image": "https://picsum.photos/seed/milk/400" },
-  { "id": "g-2", "name": "Bread", "brand": "BakeHouse", "cat": "bakery", "price": 38, "image": "https://picsum.photos/seed/bread/400" },
-  { "id": "g-3", "name": "Basmati Rice 5kg", "brand": "Royal", "cat": "all", "price": 430, "image": "https://picsum.photos/seed/rice/400" },
-  { "id": "g-4", "name": "Eggs (12)", "brand": "FarmFresh", "cat": "dairy", "price": 85, "image": "https://picsum.photos/seed/eggs/400" },
-  { "id": "g-5", "name": "Bananas (6)", "brand": "—", "cat": "fruits", "price": 45, "image": "https://picsum.photos/seed/ban/400" },
-  { "id": "g-6", "name": "Tomatoes 1kg", "brand": "—", "cat": "veg", "price": 34, "image": "https://picsum.photos/seed/tom/400" }
+  { "id": "milk-toned", "title": "Amul Toned Milk 1L", "price": 62, "image": "/images/milk.jpg", "rating": 4.5, "reviews": 220, "deliveryTime": "10 min", "category": "Dairy" },
+  { "id": "amul-butter", "title": "Amul Butter 500g", "price": 260, "image": "/images/butter.jpg", "rating": 4.7, "reviews": 600, "deliveryTime": "10 min", "category": "Dairy" },
+  { "id": "amul-cheese", "title": "Amul Cheese Slices 200g", "price": 120, "image": "/images/cheese.jpg", "rating": 4.7, "reviews": 320, "deliveryTime": "10 min", "category": "Dairy" },
+  { "id": "paneer", "title": "Fresh Paneer 200g", "price": 90, "image": "/images/paneer.jpg", "rating": 4.6, "reviews": 260, "deliveryTime": "10 min", "category": "Dairy" },
+  { "id": "curd", "title": "Nestle Curd 400g", "price": 60, "image": "/images/curd.jpg", "rating": 4.5, "reviews": 180, "deliveryTime": "10 min", "category": "Dairy" },
+
+  { "id": "bread-britannia", "title": "Britannia Whole Wheat Bread 400g", "price": 40, "image": "/images/bread.jpg", "rating": 4.2, "reviews": 95, "deliveryTime": "10 min", "category": "Bakery" },
+  { "id": "parle-g", "title": "Parle-G Biscuits 800g Family Pack", "price": 90, "image": "/images/parle-g.jpg", "rating": 4.8, "reviews": 950, "deliveryTime": "10 min", "category": "Bakery" },
+  { "id": "oreo", "title": "Oreo Choco Creme Biscuits 120g", "price": 30, "image": "/images/oreo.jpg", "rating": 4.5, "reviews": 500, "deliveryTime": "10 min", "category": "Bakery" },
+  { "id": "kissan-jam", "title": "Kissan Mixed Fruit Jam 500g", "price": 150, "image": "/images/jam.jpg", "rating": 4.4, "reviews": 210, "deliveryTime": "10 min", "category": "Bakery" },
+  { "id": "eggs-fresh6", "title": "Fresh Farm Eggs (6 pcs)", "price": 55, "image": "/images/eggs.jpg", "rating": 4.6, "reviews": 310, "deliveryTime": "10 min", "category": "Bakery" },
+
+  { "id": "maggie-2min", "title": "Maggi Instant Noodles 280g", "price": 48, "image": "/images/maggi.jpg", "rating": 4.7, "reviews": 870, "deliveryTime": "10 min", "category": "Snacks" },
+  { "id": "lays-classic", "title": "Lays Classic Salted Chips 52g", "price": 20, "image": "/images/lays.jpg", "rating": 4.3, "reviews": 560, "deliveryTime": "10 min", "category": "Snacks" },
+  { "id": "bournvita", "title": "Cadbury Bournvita 500g", "price": 235, "image": "/images/bournvita.jpg", "rating": 4.6, "reviews": 200, "deliveryTime": "10 min", "category": "Snacks" },
+  
+  { "id": "lays-tomato", "title": "Lays Tangy Tomato Chips 52g", "price": 20, "image": "/images/lays-tomato.jpg", "rating": 4.4, "reviews": 320, "deliveryTime": "10 min", "category": "Snacks" },
+
+  { "id": "coke-500ml", "title": "Coca-Cola Soft Drink 500ml", "price": 35, "image": "/images/coke.jpg", "rating": 4.4, "reviews": 430, "deliveryTime": "10 min", "category": "Beverages" },
+  { "id": "pepsi-2l", "title": "Pepsi 2L Bottle", "price": 95, "image": "/images/pepsi.jpg", "rating": 4.4, "reviews": 390, "deliveryTime": "10 min", "category": "Beverages" },
+  { "id": "fanta-1l", "title": "Fanta Orange 1L", "price": 65, "image": "/images/fanta.jpg", "rating": 4.3, "reviews": 250, "deliveryTime": "10 min", "category": "Beverages" },
+  { "id": "sprite-1l", "title": "Sprite 1L Bottle", "price": 65, "image": "/images/sprite.jpg", "rating": 4.3, "reviews": 270, "deliveryTime": "10 min", "category": "Beverages" },
+  { "id": "thumsup-1l", "title": "Thums Up 1L Bottle", "price": 70, "image": "/images/thumsup.jpg", "rating": 4.5, "reviews": 310, "deliveryTime": "10 min", "category": "Beverages" },
+  { "id": "bisleri-1l", "title": "Bisleri Mineral Water 1L", "price": 20, "image": "/images/bisleri.jpg", "rating": 4.6, "reviews": 200, "deliveryTime": "10 min", "category": "Beverages" },
+  { "id": "redbull", "title": "Red Bull Energy Drink 250ml", "price": 115, "image": "/images/redbull.jpg", "rating": 4.4, "reviews": 330, "deliveryTime": "10 min", "category": "Beverages" },
+  { "id": "tea-taj", "title": "Taj Mahal Tea 250g", "price": 150, "image": "/images/tea.jpg", "rating": 4.5, "reviews": 270, "deliveryTime": "10 min", "category": "Beverages" },
+  { "id": "coffee-nescafe", "title": "Nescafe Classic Coffee 200g", "price": 540, "image": "/images/coffee.jpg", "rating": 4.7, "reviews": 360, "deliveryTime": "10 min", "category": "Beverages" },
+
+  { "id": "aashirvaad-atta", "title": "Aashirvaad Atta 5kg", "price": 260, "image": "/images/atta.jpg", "rating": 4.6, "reviews": 420, "deliveryTime": "10 min", "category": "Groceries" },
+  { "id": "sugar", "title": "Refined Sugar 1kg", "price": 48, "image": "/images/sugar.jpg", "rating": 4.2, "reviews": 300, "deliveryTime": "10 min", "category": "Groceries" },
+  { "id": "salt", "title": "Tata Salt 1kg", "price": 25, "image": "/images/salt.jpg", "rating": 4.6, "reviews": 410, "deliveryTime": "10 min", "category": "Groceries" },
+  { "id": "rice-basmati", "title": "India Gate Basmati Rice 5kg", "price": 520, "image": "/images/rice.jpg", "rating": 4.8, "reviews": 580, "deliveryTime": "10 min", "category": "Groceries" },
+
+  { "id": "apple", "title": "Fresh Apples 1kg", "price": 180, "image": "/images/apple.jpg", "rating": 4.7, "reviews": 340, "deliveryTime": "10 min", "category": "Fruits" },
+  { "id": "banana", "title": "Banana (1 Dozen)", "price": 60, "image": "/images/banana.jpg", "rating": 4.5, "reviews": 250, "deliveryTime": "10 min", "category": "Fruits" },
+  { "id": "mango", "title": "Mango Alphonso 1kg", "price": 300, "image": "/images/mango.jpg", "rating": 4.8, "reviews": 500, "deliveryTime": "10 min", "category": "Fruits" },
+  { "id": "orange", "title": "Fresh Oranges 1kg", "price": 120, "image": "/images/orange.jpg", "rating": 4.6, "reviews": 280, "deliveryTime": "10 min", "category": "Fruits" },
+  { "id": "tomato", "title": "Tomatoes 1kg", "price": 40, "image": "/images/tomato.jpg", "rating": 4.4, "reviews": 190, "deliveryTime": "10 min", "category": "Vegetables" },
+  { "id": "potato", "title": "Potatoes 1kg", "price": 35, "image": "/images/potato.jpg", "rating": 4.5, "reviews": 210, "deliveryTime": "10 min", "category": "Vegetables" },
+  { "id": "onion", "title": "Onions 1kg", "price": 50, "image": "/images/onion.jpg", "rating": 4.3, "reviews": 300, "deliveryTime": "10 min", "category": "Vegetables" },
+  { "id": "carrot", "title": "Carrots 1kg", "price": 60, "image": "/images/carrot.jpg", "rating": 4.5, "reviews": 220, "deliveryTime": "10 min", "category": "Vegetables" },
+  { "id": "cucumber", "title": "Cucumbers 1kg", "price": 55, "image": "/images/cucumber.jpg", "rating": 4.4, "reviews": 150, "deliveryTime": "10 min", "category": "Vegetables" },
+
+  { "id": "detergent-surf", "title": "Surf Excel Quick Wash 1kg", "price": 215, "image": "/images/surf.jpg", "rating": 4.5, "reviews": 180, "deliveryTime": "10 min", "category": "Household" },
+  { "id": "washingpowder-ariel", "title": "Ariel Washing Powder 1kg", "price": 210, "image": "/images/ariel.jpg", "rating": 4.5, "reviews": 190, "deliveryTime": "10 min", "category": "Household" },
+  { "id": "rin-bar", "title": "Rin Detergent Bar (Pack of 4)", "price": 50, "image": "/images/rin.jpg", "rating": 4.2, "reviews": 210, "deliveryTime": "10 min", "category": "Household" },
+  { "id": "vim-bar", "title": "Vim Dishwash Bar (Pack of 3)", "price": 45, "image": "/images/vim.jpg", "rating": 4.4, "reviews": 280, "deliveryTime": "10 min", "category": "Household" },
+  { "id": "harpic", "title": "Harpic Toilet Cleaner 1L", "price": 175, "image": "/images/harpic.jpg", "rating": 4.6, "reviews": 200, "deliveryTime": "10 min", "category": "Household" },
+  { "id": "phenyl", "title": "Lizol Disinfectant Floor Cleaner 1L", "price": 160, "image": "/images/lizol.jpg", "rating": 4.5, "reviews": 180, "deliveryTime": "10 min", "category": "Household" },
+
+  { "id": "dettol-soap", "title": "Dettol Bathing Soap 4x125g", "price": 170, "image": "/images/dettol.jpg", "rating": 4.4, "reviews": 240, "deliveryTime": "10 min", "category": "Personal Care" },
+  { "id": "soap-lux", "title": "Lux Bath Soap 4x125g", "price": 150, "image": "/images/lux.jpg", "rating": 4.4, "reviews": 230, "deliveryTime": "10 min", "category": "Personal Care" },
+  { "id": "colgate", "title": "Colgate Toothpaste 200g", "price": 120, "image": "/images/colgate.jpg", "rating": 4.6, "reviews": 450, "deliveryTime": "10 min", "category": "Personal Care" },
+  { "id": "toothbrush", "title": "Oral-B Toothbrush (Pack of 3)", "price": 150, "image": "/images/toothbrush.jpg", "rating": 4.4, "reviews": 190, "deliveryTime": "10 min", "category": "Personal Care" },
+  { "id": "shampoo-clinic", "title": "Clinic Plus Shampoo 650ml", "price": 320, "image": "/images/shampoo.jpg", "rating": 4.5, "reviews": 240, "deliveryTime": "10 min", "category": "Personal Care" },
+  { "id": "conditioner-dove", "title": "Dove Conditioner 350ml", "price": 280, "image": "/images/conditioner.jpg", "rating": 4.6, "reviews": 210, "deliveryTime": "10 min", "category": "Personal Care" }
 ]
