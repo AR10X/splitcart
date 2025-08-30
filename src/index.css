@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+/* src/index.css */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+html, body { max-width: 100%; overflow-x: hidden; }
+#root { overflow-x: clip; } /* avoids painting beyond viewport */
+
