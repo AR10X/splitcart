@@ -15,8 +15,8 @@ export default function App() {
   return (
     <AuthProvider>
       <AuthGate>
-        <CartProvider>
-          <RoomProvider>
+        <RoomProvider>
+          <CartProvider>
             <Routes>
               <Route element={<AppShell />}>
                 {/* Home */}
@@ -30,8 +30,8 @@ export default function App() {
                 <Route path="/profile" element={<Profile />} />
               </Route>
             </Routes>
-          </RoomProvider>
-        </CartProvider>
+          </CartProvider>
+        </RoomProvider>
       </AuthGate>
     </AuthProvider>
   );

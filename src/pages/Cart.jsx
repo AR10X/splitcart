@@ -2,35 +2,32 @@ import { useCart } from "../cart/CartContext";
 import { useAuth } from "../auth/AuthContext";
 import { useRoom } from "../room/RoomContext";
 import { useNavigate } from "react-router-dom";
+import InviteButton from "../components/InviteButton";
 
 export default function Cart() {
-  // Cart state (items + fees)
-  const { state: cartState, dispatch: cartDispatch } = useCart();
-
-  // Auth (user info)
+  const { state: cartState, addOrUpdateItem, removeItem } = useCart(); // ✅ Firestore methods
+  const { state } = useRoom();
+  const roomId = state.roomId;
+  const members = state.members || [];
   const { user } = useAuth();
-
-  // Room state (room lifecycle)
-  const { state: roomState, dispatch: roomDispatch } = useRoom();
   const navigate = useNavigate();
 
   const exitCart = () => {
-    roomDispatch({ type: "EXIT_ROOM" });
+    localStorage.removeItem("roomId");
     navigate("/r"); // back to LandingPage
   };
 
-  const items = cartState.items;
+  const items = cartState.items || [];
   const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
 
   const updateQty = (item, qty) => {
     if (qty <= 0) {
-      cartDispatch({ type: "REMOVE_ITEM", payload: { id: item.id } });
+      removeItem(item.productId);
     } else {
-      cartDispatch({ type: "UPDATE_QTY", payload: { id: item.id, qty } });
+      addOrUpdateItem(item, qty);
     }
   };
 
-  // Calculate grand total including fees
   const grandTotal =
     subtotal +
     cartState.fees.delivery +
@@ -39,11 +36,9 @@ export default function Cart() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* User Header */}
+      {/* Header */}
       <div className="p-4 bg-white shadow flex justify-between items-center">
-        <h1 className="font-bold text-lg">
-          Cart (Room: {roomState.roomId || "—"})
-        </h1>
+        <h1 className="font-bold text-lg">Cart (Room: {roomId || "—"})</h1>
         <button
           onClick={exitCart}
           className="text-red-600 text-sm font-medium"
@@ -52,7 +47,30 @@ export default function Cart() {
         </button>
       </div>
 
-      {/* Items List */}
+      {/* Members */}
+      <div className="flex justify-between items-center mb-4 px-4">
+        <h2 className="font-semibold text-lg">Members</h2>
+        <InviteButton roomId={roomId} />
+      </div>
+
+      <div className="flex gap-3 mb-4 px-4 flex-wrap">
+        {members.length === 0 ? (
+          <p className="text-gray-500 text-sm">No members yet</p>
+        ) : (
+          members.map((m) => (
+            <div key={m.id} className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-green-200 flex items-center justify-center">
+                {m.name?.[0] ?? "?"}
+              </div>
+              <span>
+                {m.name} {m.id === user.id ? "(You)" : ""}
+              </span>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Items */}
       <div className="flex-1 px-4 py-3 space-y-3">
         {items.length === 0 ? (
           <div className="flex items-center justify-center h-64 text-gray-500">
@@ -109,6 +127,7 @@ export default function Cart() {
         )}
       </div>
 
+      {/* Bill Details */}
       {items.length > 0 && (
         <div
           className="bg-white px-4 py-3 border-t shadow-[0_-2px_6px_rgba(0,0,0,0.05)] 
