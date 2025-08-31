@@ -1,7 +1,12 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuth, logout as fbLogout } from "../lib/firebase";
 
-const Ctx = createContext(null);
+const Ctx = createContext({
+  user: null,
+  setUser: () => {},
+  loading: true,
+  logout: () => {},
+});
 export const useAuth = () => useContext(Ctx);
 
 export function AuthProvider({ children }) {

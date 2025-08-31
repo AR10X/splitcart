@@ -7,7 +7,8 @@ import ProductCard from "../components/ProductCard";
 import { Search } from "lucide-react"; // add this at the top
 
 export default function Home() {
-  const { user } = useAuth();
+  const auth = useAuth();
+  const user = auth?.user;
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("all");
 

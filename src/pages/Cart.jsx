@@ -1,42 +1,55 @@
 import { useCart } from "../cart/CartContext";
 import { useAuth } from "../auth/AuthContext";
-import FeesPanel from "../components/FeesPanel";
+import { useRoom } from "../room/RoomContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Cart() {
-  const { state, dispatch } = useCart();
+  // Cart state (items + fees)
+  const { state: cartState, dispatch: cartDispatch } = useCart();
+
+  // Auth (user info)
   const { user } = useAuth();
 
-  const items = state.items;
+  // Room state (room lifecycle)
+  const { state: roomState, dispatch: roomDispatch } = useRoom();
+  const navigate = useNavigate();
+
+  const exitCart = () => {
+    roomDispatch({ type: "EXIT_ROOM" });
+    navigate("/r"); // back to LandingPage
+  };
+
+  const items = cartState.items;
   const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
 
   const updateQty = (item, qty) => {
     if (qty <= 0) {
-      dispatch({ type: "REMOVE_ITEM", payload: { id: item.id } });
+      cartDispatch({ type: "REMOVE_ITEM", payload: { id: item.id } });
     } else {
-      dispatch({ type: "UPDATE_QTY", payload: { id: item.id, qty } });
+      cartDispatch({ type: "UPDATE_QTY", payload: { id: item.id, qty } });
     }
   };
 
   // Calculate grand total including fees
   const grandTotal =
     subtotal +
-    state.fees.delivery +
-    state.fees.packaging +
-    state.fees.tip;
+    cartState.fees.delivery +
+    cartState.fees.packaging +
+    cartState.fees.tip;
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* User Header */}
-      <div className="bg-white px-4 py-3 shadow-sm flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center font-semibold">
-          {user?.displayName?.[0] || user?.phoneNumber?.[0] || "U"}
-        </div>
-        <div>
-          <div className="font-semibold text-gray-800">
-            {user?.displayName || user?.phoneNumber || "User"}
-          </div>
-          <div className="text-xs text-gray-500">Your cart</div>
-        </div>
+      <div className="p-4 bg-white shadow flex justify-between items-center">
+        <h1 className="font-bold text-lg">
+          Cart (Room: {roomState.roomId || "—"})
+        </h1>
+        <button
+          onClick={exitCart}
+          className="text-red-600 text-sm font-medium"
+        >
+          Exit Cart
+        </button>
       </div>
 
       {/* Items List */}
@@ -62,7 +75,9 @@ export default function Cart() {
                   <div className="text-sm font-medium text-gray-800">
                     {item.title}
                   </div>
-                  <div className="text-xs text-gray-500">₹{item.price} each</div>
+                  <div className="text-xs text-gray-500">
+                    ₹{item.price} each
+                  </div>
                 </div>
               </div>
 
@@ -95,8 +110,10 @@ export default function Cart() {
       </div>
 
       {items.length > 0 && (
-        <div className="bg-white px-4 py-3 border-t shadow-[0_-2px_6px_rgba(0,0,0,0.05)] 
-                pb-[calc(env(safe-area-inset-bottom)+130px)]">
+        <div
+          className="bg-white px-4 py-3 border-t shadow-[0_-2px_6px_rgba(0,0,0,0.05)] 
+                pb-[calc(env(safe-area-inset-bottom)+130px)]"
+        >
           <h2 className="font-semibold text-gray-800 mb-2">Bill details</h2>
 
           <div className="flex justify-between text-sm text-gray-600 py-1">
@@ -106,28 +123,22 @@ export default function Cart() {
 
           <div className="flex justify-between text-sm text-gray-600 py-1">
             <span>Delivery charge</span>
-            <span className="text-gray-800">₹{state.fees.delivery}</span>
+            <span className="text-gray-800">{cartState.fees.delivery}</span>
           </div>
 
           <div className="flex justify-between text-sm text-gray-600 py-1">
             <span>Packaging charge</span>
-            <span className="text-gray-800">₹{state.fees.packaging}</span>
+            <span className="text-gray-800">{cartState.fees.packaging}</span>
           </div>
 
           <div className="flex justify-between text-sm text-gray-600 py-1">
             <span>Tip</span>
-            <span className="text-gray-800">₹{state.fees.tip}</span>
+            <span className="text-gray-800">{cartState.fees.tip}</span>
           </div>
 
           <div className="flex justify-between font-bold text-base border-t pt-2 mt-2">
             <span>Grand total</span>
-            <span>
-              ₹
-              {subtotal +
-                state.fees.delivery +
-                state.fees.packaging +
-                state.fees.tip}
-            </span>
+            <span>₹{grandTotal}</span>
           </div>
 
           <button className="w-full mt-3 bg-[#00C853] text-white py-3 rounded-lg font-semibold active:scale-95 transition">
