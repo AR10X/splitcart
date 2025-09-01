@@ -4,6 +4,9 @@
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-html, body { max-width: 100%; overflow-x: hidden; }
+
+html {max-width: 100%; overflow-x: hidden;}
+
+body { max-width: 100%; overflow-x: hidden; font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif; }
 #root { overflow-x: clip; } /* avoids painting beyond viewport */
 

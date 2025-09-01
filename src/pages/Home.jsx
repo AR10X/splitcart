@@ -5,6 +5,7 @@ import HeroBanner from "../components/HeroBanner";
 import CategoryChips from "../components/CategoryChips";
 import ProductCard from "../components/ProductCard";
 import { Search } from "lucide-react"; // add this at the top
+import GreetingBar from "../components/GreetingBar";
 
 export default function Home() {
   const auth = useAuth();
@@ -44,7 +45,9 @@ export default function Home() {
       <div className="sticky top-0 z-10 bg-white/70 backdrop-blur">
         <div className="max-w-5xl mx-auto px-4 pt-4 pb-3">
           <div className="flex items-center justify-between mb-3">
-            <div className="text-sm text-gray-500">Welcome back,</div>
+            <div className="bg-white">
+              <GreetingBar />
+            </div>
             <div className="w-8 h-8 rounded-full bg-green-100 grid place-items-center text-green-700 font-semibold">
               {(user?.name || user?.phone || "U").slice(0, 1).toUpperCase()}
             </div>
