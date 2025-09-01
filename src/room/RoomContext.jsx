@@ -10,6 +10,7 @@ import {
   arrayRemove,
 } from "firebase/firestore";
 import { useAuth } from "../auth/AuthContext";
+import CartLoader from "../components/CartLoader";
 
 const RoomContext = createContext(null);
 export const useRoom = () => useContext(RoomContext);
@@ -134,7 +135,9 @@ export function RoomProvider({ children }) {
 
     dispatch({ type: "EXIT_ROOM" });
   }
-
+  if (state.loading) {
+    return <CartLoader message="Joining room..." />;
+  }
   return (
     <RoomContext.Provider
       value={{

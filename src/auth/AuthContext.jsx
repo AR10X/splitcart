@@ -1,6 +1,7 @@
 // src/auth/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuth, logout as fbLogout } from "../lib/firebase";
+import CartLoader from "../components/CartLoader";
 
 const Ctx = createContext(null);
 export const useAuth = () => useContext(Ctx);
@@ -36,7 +37,7 @@ export function AuthProvider({ children }) {
 
   return (
     <Ctx.Provider value={{ user, setUser, loading, logout: fbLogout }}>
-      {children}
+      {loading ? <CartLoader message="Loading your profile..." /> : children}
     </Ctx.Provider>
   );
 }

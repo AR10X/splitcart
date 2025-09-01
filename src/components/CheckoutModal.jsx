@@ -1,12 +1,12 @@
-// src/components/CheckoutModal.jsx
 import { useRoom } from "../room/RoomContext";
 import { useCart } from "../cart/CartContext";
 import { useAuth } from "../auth/AuthContext";
 import { db } from "../lib/firebase";
-import { doc, updateDoc, getDoc, setDoc } from "firebase/firestore";
+import { doc, updateDoc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 import { useNavigate } from "react-router-dom";
+import CartLoader from "./CartLoader"; // ✅ import loader
 
 export default function CheckoutModal({ onClose }) {
   const { state: roomState } = useRoom();
@@ -16,8 +16,9 @@ export default function CheckoutModal({ onClose }) {
 
   const { perUser, totalFees } = useCartTotals();
   const [myShare, setMyShare] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  // ✅ Find my share
+  // Find my share
   useEffect(() => {
     const me = perUser.find((g) => g.ownerId === user?.uid);
     if (me) setMyShare(me.total);
@@ -27,11 +28,12 @@ export default function CheckoutModal({ onClose }) {
   const allPaid =
     roomState.members.length > 0 && roomState.members.every((m) => m.paid);
 
-  // ✅ When allPaid → create order once + show confetti
+  // When allPaid → create order once, clear room, redirect
   useEffect(() => {
     if (allPaid && roomState.roomId) {
       (async () => {
-        const orderRef = doc(db, "orders", roomState.roomId); // ✅ one order per room
+        setLoading(true);
+        const orderRef = doc(db, "orders", roomState.roomId);
         const snap = await getDoc(orderRef);
 
         if (!snap.exists()) {
@@ -48,11 +50,15 @@ export default function CheckoutModal({ onClose }) {
           });
         }
 
-        // 🎉 Confetti for everyone
+        await deleteDoc(doc(db, "rooms", roomState.roomId));
+        localStorage.removeItem("roomId");
+
         confetti({ particleCount: 200, spread: 70, origin: { y: 0.6 } });
 
-        // Redirect
-        setTimeout(() => navigate("/profile"), 2000);
+        setTimeout(() => {
+          setLoading(false);
+          navigate("/");
+        }, 2000);
       })();
     }
   }, [
@@ -64,7 +70,6 @@ export default function CheckoutModal({ onClose }) {
     totalFees,
   ]);
 
-  // ✅ Confirm payment for current user
   async function confirmPayment() {
     if (!roomState.roomId || !user?.uid) return;
     const ref = doc(db, "rooms", roomState.roomId);
@@ -80,47 +85,49 @@ export default function CheckoutModal({ onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end z-50">
-      <div className="bg-white w-full rounded-t-2xl p-6 shadow-lg">
-        <h2 className="text-xl font-semibold mb-4">Checkout</h2>
+    <>
+      {loading && <CartLoader message="Placing your order..." />}
 
-        {/* My bill share */}
-        <div className="flex justify-between mb-4">
-          <span className="font-medium">Your share</span>
-          <span className="font-bold text-lg">₹{myShare}</span>
-        </div>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end z-40 pb-20">
+        <div className="bg-white w-full rounded-t-2xl p-6 shadow-lg">
+          <h2 className="text-xl font-semibold mb-4">Checkout</h2>
 
-        <p className="text-sm text-gray-500 mb-6">
-          {me?.paid
-            ? allPaid
-              ? "All members have paid! Redirecting..."
-              : "You have paid. Waiting for others to complete payment..."
-            : "Confirm your payment. Once all members have paid, your order will be placed."}
-        </p>
-
-        {/* Buttons */}
-        {!me?.paid && !allPaid && (
-          <button
-            onClick={confirmPayment}
-            className="w-full bg-[#00C853] text-white py-3 rounded-lg font-semibold active:scale-95 transition"
-          >
-            Confirm Payment
-          </button>
-        )}
-
-        {me?.paid && !allPaid && (
-          <div className="w-full bg-gray-100 text-gray-600 py-3 rounded-lg font-medium text-center">
-            Waiting for others to pay...
+          <div className="flex justify-between mb-4">
+            <span className="font-medium">Your share</span>
+            <span className="font-bold text-lg">₹{myShare}</span>
           </div>
-        )}
 
-        <button
-          onClick={onClose}
-          className="mt-2 w-full bg-gray-200 text-gray-700 py-3 rounded-lg font-medium"
-        >
-          Close
-        </button>
+          <p className="text-sm text-gray-500 mb-6">
+            {me?.paid
+              ? allPaid
+                ? "All members have paid! Redirecting..."
+                : "You have paid. Waiting for others to complete payment..."
+              : "Confirm your payment. Once all members have paid, your order will be placed."}
+          </p>
+
+          {!me?.paid && !allPaid && (
+            <button
+              onClick={confirmPayment}
+              className="w-full bg-[#00C853] text-white py-3 rounded-lg font-semibold active:scale-95 transition"
+            >
+              Confirm Payment
+            </button>
+          )}
+
+          {me?.paid && !allPaid && (
+            <div className="w-full bg-gray-100 text-gray-600 py-3 rounded-lg font-medium text-center">
+              Waiting for others to pay...
+            </div>
+          )}
+
+          <button
+            onClick={onClose}
+            className="mt-2 w-full bg-gray-200 text-gray-700 py-3 rounded-lg font-medium"
+          >
+            Close
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

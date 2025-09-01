@@ -4,6 +4,7 @@ import { useRoom } from "../room/RoomContext";
 import { useAuth } from "../auth/AuthContext";
 import { db } from "../lib/firebase";
 import { doc, getDoc, updateDoc, onSnapshot } from "firebase/firestore";
+import CartLoader from "../components/CartLoader";
 
 const CartContext = createContext(null);
 export const useCart = () => useContext(CartContext);
@@ -142,7 +143,9 @@ export function CartProvider({ children }) {
 
     return { perUser, totalFees };
   }
-
+  if (state.loading) {
+    return <CartLoader message="Loading your cart..." />;
+  }
   return (
     <CartContext.Provider
       value={{

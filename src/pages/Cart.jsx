@@ -151,7 +151,7 @@ export default function Cart() {
 
       {/* Bill Summary */}
       {cartState.items.length > 0 && (
-        <div className="bg-white px-4 py-3 border-t shadow pb-[calc(env(safe-area-inset-bottom)+100px)]">
+        <div className="bg-white px-4 py-3 border-t shadow pb-[calc(env(safe-area-inset-bottom)+130px)]">
           <h2 className="font-semibold text-gray-800 mb-2">
             Bill details
           </h2>
