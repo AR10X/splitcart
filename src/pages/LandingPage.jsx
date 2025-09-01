@@ -45,7 +45,13 @@ export default function LandingPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-100px)] bg-gray-50 px-6">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">SplitCart</h1>
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-3xl sm:text-4xl font-bold">
+          <span className="text-gray-900">Split</span>
+          <span className="text-green-600">Cart</span>
+        </span>
+        <span className="text-green-600 text-2xl" aria-hidden>🛒</span>
+      </div>
       <p className="text-sm text-gray-500 mb-4 text-center max-w-sm">
         Create a new shared cart with friends, or join one with a code.
       </p>
