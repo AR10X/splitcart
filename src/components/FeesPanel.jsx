@@ -1,55 +1,45 @@
+// src/components/FeesPanel.jsx
 import { useCart } from "../cart/CartContext";
 
 export default function FeesPanel() {
   const { state, dispatch } = useCart();
-  const { fees } = state;
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    const num = Math.max(0, Number(value) || 0); // ensure valid number
+  const handleChange = (name, value) => {
     dispatch({
       type: "UPDATE_FEES",
-      payload: { name, value: num },
+      payload: { name, value: Number(value) || 0 },
     });
+    console.log(`💰 Fee updated: ${name} → ${value}`);
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-sm space-y-3 mt-3">
-      <h2 className="font-semibold text-gray-800">Fees</h2>
-
-      <div className="flex justify-between items-center text-sm">
-        <label className="text-gray-600">Delivery</label>
+    <div className="bg-white rounded-lg shadow-sm p-4 space-y-3">
+      <h2 className="font-semibold text-gray-800">Adjust fees</h2>
+      <div className="flex justify-between text-sm">
+        <label>Delivery</label>
         <input
           type="number"
-          min="0"
-          name="delivery"
-          value={fees.delivery}
-          onChange={handleChange}
-          className="w-20 px-2 py-1 border rounded text-right"
+          value={state.fees.delivery}
+          onChange={(e) => handleChange("delivery", e.target.value)}
+          className="w-20 border rounded px-2 py-1 text-sm"
         />
       </div>
-
-      <div className="flex justify-between items-center text-sm">
-        <label className="text-gray-600">Packaging</label>
+      <div className="flex justify-between text-sm">
+        <label>Packaging</label>
         <input
           type="number"
-          min="0"
-          name="packaging"
-          value={fees.packaging}
-          onChange={handleChange}
-          className="w-20 px-2 py-1 border rounded text-right"
+          value={state.fees.packaging}
+          onChange={(e) => handleChange("packaging", e.target.value)}
+          className="w-20 border rounded px-2 py-1 text-sm"
         />
       </div>
-
-      <div className="flex justify-between items-center text-sm">
-        <label className="text-gray-600">Tip</label>
+      <div className="flex justify-between text-sm">
+        <label>Tip</label>
         <input
           type="number"
-          min="0"
-          name="tip"
-          value={fees.tip}
-          onChange={handleChange}
-          className="w-20 px-2 py-1 border rounded text-right"
+          value={state.fees.tip}
+          onChange={(e) => handleChange("tip", e.target.value)}
+          className="w-20 border rounded px-2 py-1 text-sm"
         />
       </div>
     </div>

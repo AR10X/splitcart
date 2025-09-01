@@ -1,143 +1,159 @@
-import { createContext, useContext, useReducer, useEffect } from "react";
-import {
-  collection,
-  doc,
-  setDoc,
-  deleteDoc,
-  onSnapshot,
-} from "firebase/firestore";
-import { db } from "../lib/firebase";
-import { useAuth } from "../auth/AuthContext";
+// src/cart/CartContext.jsx
+import { createContext, useContext, useEffect, useReducer } from "react";
 import { useRoom } from "../room/RoomContext";
+import { useAuth } from "../auth/AuthContext";
+import { db } from "../lib/firebase";
+import { doc, getDoc, updateDoc, onSnapshot } from "firebase/firestore";
+
+const CartContext = createContext(null);
+export const useCart = () => useContext(CartContext);
 
 const initialState = {
   items: [],
-  fees: { delivery: 30, packaging: 7, tip: 0 },
+  fees: {
+    delivery: 20,
+    packaging: 10,
+    tip: 0,
+  },
 };
 
-function cartReducer(state, action) {
+function reducer(state, action) {
   switch (action.type) {
-    case "SET_ITEMS":
+    case "SET_CART":
       return { ...state, items: action.payload };
-    case "UPDATE_FEES":
-      return {
-        ...state,
-        fees: { ...state.fees, [action.payload.name]: action.payload.value },
-      };
-    case "CLEAR_CART":
-      return initialState;
+
+    case "SET_FEES":
+      return { ...state, fees: action.payload };
+
     default:
       return state;
   }
 }
 
-const CartCtx = createContext(null);
-
 export function CartProvider({ children }) {
-  const { user } = useAuth();
   const { state: roomState } = useRoom();
-  const [state, dispatch] = useReducer(cartReducer, initialState);
+  const { user } = useAuth();
+  const [state, dispatch] = useReducer(reducer, initialState);
 
-  // 🔹 Subscribe to Firestore items whenever room changes
+  // 🔹 Subscribe to Firestore cart + fees
   useEffect(() => {
     if (!roomState.roomId) return;
-    console.log("📡 Subscribing to cart items for room:", roomState.roomId);
+    const ref = doc(db, "rooms", roomState.roomId);
 
-    const unsub = onSnapshot(
-      collection(db, "rooms", roomState.roomId, "items"),
-      (snap) => {
-        const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        console.log("📥 Items updated from Firestore:", items);
-        dispatch({ type: "SET_ITEMS", payload: items });
-      }
-    );
+    const unsub = onSnapshot(ref, (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.data();
+      dispatch({ type: "SET_CART", payload: data.cart || [] });
+      dispatch({ type: "SET_FEES", payload: data.fees || initialState.fees });
+    });
 
     return () => unsub();
   }, [roomState.roomId]);
 
-  // 🔹 Add or update item
+  // 🔹 Add or update an item in Firestore cart
   async function addOrUpdateItem(item, qty) {
-  console.log("🟢 addOrUpdateItem CALLED with:", item, "qty:", qty);
-
-  if (!roomState.roomId) {
-    console.warn("❌ No roomId — cannot add item");
-    return;
-  }
-  if (!user) {
-    console.warn("❌ No user — cannot add item");
-    return;
-  }
-
-  try {
-    const ref = doc(db, "rooms", roomState.roomId, "items", item.productId);
-    await setDoc(ref, {
-      ...item,
-      qty,
-      ownerId: user.id,
-      ownerName: user.name || user.phone || "Anonymous",
-    });
-    console.log("✅ Item added/updated in Firestore:", item.title, "qty:", qty);
-  } catch (e) {
-    console.error("🔥 addOrUpdateItem failed:", e);
-  }
-}
-
-
-  // 🔹 Remove item
-  async function removeItem(productId) {
-    if (!roomState.roomId) {
-      console.warn("❌ No roomId — cannot remove item");
+    if (!roomState.roomId || !user?.uid) {
+      console.error("❌ Cannot add item: no room or user");
       return;
     }
-    try {
-      await deleteDoc(doc(db, "rooms", roomState.roomId, "items", productId));
-      console.log("🗑️ Item removed:", productId);
-    } catch (e) {
-      console.error("🔥 removeItem failed:", e);
+
+    const ref = doc(db, "rooms", roomState.roomId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+    const cart = data.cart || [];
+
+    const existing = cart.find(
+      (i) => i.productId === item.productId && i.ownerId === user.uid
+    );
+
+    let newCart;
+    if (existing) {
+      newCart = cart.map((i) =>
+        i.productId === item.productId && i.ownerId === user.uid
+          ? { ...i, qty }
+          : i
+      );
+    } else {
+      newCart = [...cart, { ...item, qty, ownerId: user.uid }];
     }
+
+    await updateDoc(ref, { cart: newCart });
+  }
+
+  // 🔹 Remove an item from Firestore cart
+  async function removeItem(productId) {
+    if (!roomState.roomId || !user?.uid) return;
+
+    const ref = doc(db, "rooms", roomState.roomId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+    const cart = data.cart || [];
+
+    const newCart = cart.filter(
+      (i) => !(i.productId === productId && i.ownerId === user.uid)
+    );
+
+    await updateDoc(ref, { cart: newCart });
+  }
+
+  // 🔹 Clear cart for everyone (room-level)
+  async function clearCart() {
+    if (!roomState.roomId) return;
+    const ref = doc(db, "rooms", roomState.roomId);
+    await updateDoc(ref, { cart: [] });
+  }
+
+  // 🔹 Compute per-user totals (with names from RoomContext.members)
+  function useCartTotals() {
+    const { items, fees } = state;
+
+    const groups = items.reduce((acc, item) => {
+      const ownerId = item.ownerId;
+      const member = roomState.members.find((m) => m.uid === ownerId);
+
+      if (!acc[ownerId]) {
+        acc[ownerId] = {
+          ownerId,
+          ownerName: member?.name || "Anonymous", // ✅ resolve from Firestore members
+          items: [],
+          subtotal: 0,
+          total: 0,
+        };
+      }
+      acc[ownerId].items.push(item);
+      acc[ownerId].subtotal += item.price * item.qty;
+      return acc;
+    }, {});
+
+    const perUser = Object.values(groups);
+
+    const totalFees =
+      (fees.delivery || 0) + (fees.packaging || 0) + (fees.tip || 0);
+
+    const feeShare = perUser.length > 0 ? totalFees / perUser.length : 0;
+
+    perUser.forEach((g) => {
+      g.total = g.subtotal + feeShare;
+    });
+
+    return { perUser, totalFees };
   }
 
   return (
-    <CartCtx.Provider
-      value={{ state, dispatch, addOrUpdateItem, removeItem }}
+    <CartContext.Provider
+      value={{
+        state,
+        addOrUpdateItem,
+        removeItem,
+        clearCart,
+        useCartTotals,
+      }}
     >
       {children}
-    </CartCtx.Provider>
+    </CartContext.Provider>
   );
-}
-
-export const useCart = () => {
-  const ctx = useContext(CartCtx);
-  if (!ctx) throw new Error("useCart must be used within CartProvider");
-  return ctx;
-};
-
-// 🔹 Compute totals per user
-export function useCartTotals() {
-  const { state } = useCart();
-  const totalFees =
-    state.fees.delivery + state.fees.packaging + state.fees.tip;
-
-  const groups = state.items.reduce((acc, item) => {
-    if (!acc[item.ownerId]) {
-      acc[item.ownerId] = {
-        ownerName: item.ownerName,
-        items: [],
-        subtotal: 0,
-      };
-    }
-    acc[item.ownerId].items.push(item);
-    acc[item.ownerId].subtotal += item.price * item.qty;
-    return acc;
-  }, {});
-
-  const memberCount = Object.keys(groups).length || 1;
-  const feeShare = totalFees / memberCount;
-
-  const perUser = Object.values(groups).map((g) => ({
-    ...g,
-    total: g.subtotal + feeShare,
-  }));
-
-  return { perUser, totalFees, feeShare, groups };
 }

@@ -1,22 +1,25 @@
-// InviteButton.jsx
-export default function InviteButton({ roomId }) {
-  const link = `${window.location.origin}/r/${roomId}`;
+// src/components/InviteButton.jsx
+import { useState } from "react";
 
-  async function handleShare() {
-    if (navigator.share) {
-      await navigator.share({ title: "Join my SplitCart", url: link });
-    } else {
-      await navigator.clipboard.writeText(link);
-      alert("Link copied!");
-    }
-  }
+export default function InviteButton({ roomId }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    if (!roomId) return;
+    const url = `${window.location.origin}/r/${roomId}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    console.log("🔗 Invite link copied:", url);
+  };
 
   return (
     <button
-      onClick={handleShare}
-      className="px-4 py-2 bg-green-500 text-white rounded"
+      onClick={handleCopy}
+      disabled={!roomId}
+      className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg shadow active:scale-95 disabled:opacity-50"
     >
-      Invite
+      {copied ? "Copied!" : "Invite"}
     </button>
   );
 }

@@ -1,24 +1,26 @@
+// src/pages/Cart.jsx
 import { useCart } from "../cart/CartContext";
 import { useAuth } from "../auth/AuthContext";
 import { useRoom } from "../room/RoomContext";
 import { useNavigate } from "react-router-dom";
 import InviteButton from "../components/InviteButton";
+import { useState } from "react";
+import CheckoutModal from "../components/CheckoutModal";
 
 export default function Cart() {
-  const { state: cartState, addOrUpdateItem, removeItem } = useCart(); // ✅ Firestore methods
-  const { state } = useRoom();
-  const roomId = state.roomId;
-  const members = state.members || [];
+  const { state: cartState, addOrUpdateItem, removeItem } = useCart();
   const { user } = useAuth();
+  const { state: roomState, exitRoom } = useRoom(); // ✅ reducer style
+  const { useCartTotals } = useCart();
+  const { perUser, totalFees } = useCartTotals(); 
   const navigate = useNavigate();
 
-  const exitCart = () => {
-    localStorage.removeItem("roomId");
-    navigate("/r"); // back to LandingPage
-  };
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
-  const items = cartState.items || [];
-  const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
+  const exitCart = () => {
+    exitRoom();
+    navigate("/r");
+  };
 
   const updateQty = (item, qty) => {
     if (qty <= 0) {
@@ -28,6 +30,10 @@ export default function Cart() {
     }
   };
 
+  const subtotal = cartState.items.reduce(
+    (sum, i) => sum + i.price * i.qty,
+    0
+  );
   const grandTotal =
     subtotal +
     cartState.fees.delivery +
@@ -38,7 +44,9 @@ export default function Cart() {
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Header */}
       <div className="p-4 bg-white shadow flex justify-between items-center">
-        <h1 className="font-bold text-lg">Cart (Room: {roomId || "—"})</h1>
+        <h1 className="font-bold text-lg">
+          Cart (Room: {roomState.roomId || "—"})
+        </h1>
         <button
           onClick={exitCart}
           className="text-red-600 text-sm font-medium"
@@ -48,111 +56,125 @@ export default function Cart() {
       </div>
 
       {/* Members */}
-      <div className="flex justify-between items-center mb-4 px-4">
+      <div className="flex justify-between items-center px-4 py-2">
         <h2 className="font-semibold text-lg">Members</h2>
-        <InviteButton roomId={roomId} />
+        <InviteButton roomId={roomState.roomId} />
       </div>
 
-      <div className="flex gap-3 mb-4 px-4 flex-wrap">
-        {members.length === 0 ? (
-          <p className="text-gray-500 text-sm">No members yet</p>
-        ) : (
-          members.map((m) => (
-            <div key={m.id} className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-green-200 flex items-center justify-center">
-                {m.name?.[0] ?? "?"}
-              </div>
-              <span>
-                {m.name} {m.id === user.id ? "(You)" : ""}
-              </span>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* Items */}
-      <div className="flex-1 px-4 py-3 space-y-3">
-        {items.length === 0 ? (
-          <div className="flex items-center justify-center h-64 text-gray-500">
+      {/* Grouped items per user */}
+      <div className="flex-1 px-4 space-y-4 pb-40">
+        {perUser.length === 0 ? (
+          <div className="flex items-center justify-center h-40 text-gray-500">
             Cart is empty
           </div>
         ) : (
-          items.map((item) => (
-            <div
-              key={item.productId}
-              className="flex items-center justify-between bg-white rounded-lg shadow-sm p-3"
-            >
-              {/* Left */}
-              <div className="flex items-center gap-3">
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="w-12 h-12 rounded-md object-cover"
-                />
-                <div>
-                  <div className="text-sm font-medium text-gray-800">
-                    {item.title}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    ₹{item.price} each
-                  </div>
-                </div>
-              </div>
+          perUser.map((group, idx) => {
+            const ownerId = group.items[0]?.ownerId;
+            const member = roomState.members?.find((m) => m.uid === ownerId); // ✅ fix: Firestore members use uid
 
-              {/* Right */}
-              <div className="flex items-center gap-3">
-                <div className="flex items-center bg-green-50 rounded-full shadow-sm">
-                  <button
-                    onClick={() => updateQty(item, item.qty - 1)}
-                    className="px-3 py-1 text-green-600 font-bold text-lg leading-none"
-                  >
-                    −
-                  </button>
-                  <span className="px-2 text-sm font-medium text-gray-800">
-                    {item.qty}
+            return (
+              <div
+                key={ownerId || idx}
+                className="bg-white rounded-lg shadow-sm p-4"
+              >
+                <div className="flex justify-between items-center mb-3">
+                  <span className="font-semibold">
+                    {group.ownerName}{" "}
+                    {ownerId === user?.uid ? "(You)" : ""}
                   </span>
-                  <button
-                    onClick={() => updateQty(item, item.qty + 1)}
-                    className="px-3 py-1 text-green-600 font-bold text-lg leading-none"
+                  <span
+                    className={
+                      member?.paid
+                        ? "text-green-600 text-sm"
+                        : "text-red-500 text-sm"
+                    }
                   >
-                    +
-                  </button>
+                    {member?.paid ? "Paid" : "Unpaid"}
+                  </span>
                 </div>
-                <span className="text-sm font-semibold text-gray-800 min-w-[40px] text-right">
-                  ₹{item.price * item.qty}
-                </span>
+
+                {group.items.map((item) => (
+                  <div
+                    key={item.productId}
+                    className="flex justify-between items-center py-2 border-b last:border-none"
+                  >
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-10 h-10 rounded object-cover"
+                      />
+                      <span className="text-sm font-medium">
+                        {item.title}
+                      </span>
+                    </div>
+
+                    {item.ownerId === user?.uid && (
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center bg-green-50 rounded-full">
+                          <button
+                            onClick={() =>
+                              updateQty(item, item.qty - 1)
+                            }
+                            className="px-3 py-1 text-green-600 font-bold"
+                          >
+                            −
+                          </button>
+                          <span className="px-2 text-sm">{item.qty}</span>
+                          <button
+                            onClick={() =>
+                              updateQty(item, item.qty + 1)
+                            }
+                            className="px-3 py-1 text-green-600 font-bold"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <span className="w-12 text-right font-semibold text-sm">
+                          ₹{item.price * item.qty}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                <div className="mt-2 text-right text-sm font-medium">
+                  Subtotal: ₹{group.subtotal} + Fee share: ₹
+                  {(totalFees / perUser.length).toFixed(0)} ={" "}
+                  <span className="font-bold">₹{group.total}</span>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
-      {/* Bill Details */}
-      {items.length > 0 && (
-        <div
-          className="bg-white px-4 py-3 border-t shadow-[0_-2px_6px_rgba(0,0,0,0.05)] 
-                pb-[calc(env(safe-area-inset-bottom)+130px)]"
-        >
-          <h2 className="font-semibold text-gray-800 mb-2">Bill details</h2>
+      {/* Bill Summary */}
+      {cartState.items.length > 0 && (
+        <div className="bg-white px-4 py-3 border-t shadow pb-[calc(env(safe-area-inset-bottom)+100px)]">
+          <h2 className="font-semibold text-gray-800 mb-2">
+            Bill details
+          </h2>
 
           <div className="flex justify-between text-sm text-gray-600 py-1">
             <span>Items total</span>
             <span className="text-gray-800">₹{subtotal}</span>
           </div>
-
           <div className="flex justify-between text-sm text-gray-600 py-1">
             <span>Delivery charge</span>
-            <span className="text-gray-800">{cartState.fees.delivery}</span>
+            <span className="text-gray-800">
+              ₹{cartState.fees.delivery}
+            </span>
           </div>
-
           <div className="flex justify-between text-sm text-gray-600 py-1">
             <span>Packaging charge</span>
-            <span className="text-gray-800">{cartState.fees.packaging}</span>
+            <span className="text-gray-800">
+              ₹{cartState.fees.packaging}
+            </span>
           </div>
-
           <div className="flex justify-between text-sm text-gray-600 py-1">
             <span>Tip</span>
-            <span className="text-gray-800">{cartState.fees.tip}</span>
+            <span className="text-gray-800">₹{cartState.fees.tip}</span>
           </div>
 
           <div className="flex justify-between font-bold text-base border-t pt-2 mt-2">
@@ -160,10 +182,17 @@ export default function Cart() {
             <span>₹{grandTotal}</span>
           </div>
 
-          <button className="w-full mt-3 bg-[#00C853] text-white py-3 rounded-lg font-semibold active:scale-95 transition">
+          <button
+            onClick={() => setCheckoutOpen(true)}
+            className="w-full mt-3 bg-[#00C853] text-white py-3 rounded-lg font-semibold active:scale-95 transition"
+          >
             Checkout
           </button>
         </div>
+      )}
+
+      {checkoutOpen && (
+        <CheckoutModal onClose={() => setCheckoutOpen(false)} />
       )}
     </div>
   );

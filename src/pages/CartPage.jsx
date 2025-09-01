@@ -1,35 +1,20 @@
+// src/pages/CartPage.jsx
 import { useParams } from "react-router-dom";
 import { useRoom } from "../room/RoomContext";
 import LandingPage from "./LandingPage";
 import Cart from "./Cart";
-import { useEffect } from "react";
 
 export default function CartPage() {
-  const { state, joinRoom } = useRoom();
   const { code } = useParams();
+  const { state: roomState } = useRoom(); // ✅ reducer style
 
-  useEffect(() => {
-    // 1. If there’s a code in URL → always join that room
-    if (code && state.roomId !== code) {
-      joinRoom(code).catch((err) =>
-        console.error("Failed to join room:", err)
-      );
-    }
-    // 2. Else if no room but we have saved one → rejoin it
-    else if (!code && !state.roomId) {
-      const saved = localStorage.getItem("roomId");
-      if (saved) {
-        joinRoom(saved).catch((err) =>
-          console.error("Failed to rejoin saved room:", err)
-        );
-      }
-    }
-  }, [code, state.roomId, joinRoom]);
+  console.log("CartPage render:", { roomId: roomState.roomId, code });
 
-  // If no active room → Landing
-  if (!state.roomId) {
+  // If no room joined yet AND no room code in URL → show Landing
+  if (!roomState.roomId && !code) {
     return <LandingPage />;
   }
 
+  // If there’s a room (joined or via URL param) → show Cart
   return <Cart />;
 }

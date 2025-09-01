@@ -18,7 +18,7 @@ export default function Home() {
       skuId: item.id,
       name: item.title, // ✅ use title, not name
       price: item.price,
-      ownerId: user.id,
+      ownerId: user.uid,
       ownerPhone: user.phone,
       ownerName: user.name || "",
       qty: 1

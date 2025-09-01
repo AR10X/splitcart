@@ -1,31 +1,61 @@
+// src/room/RoomContext.jsx
 import { createContext, useContext, useReducer, useEffect } from "react";
+import { db } from "../lib/firebase";
 import {
   doc,
   setDoc,
-  getDoc,
   updateDoc,
+  onSnapshot,
   arrayUnion,
   arrayRemove,
-  onSnapshot,
 } from "firebase/firestore";
-import { db } from "../lib/firebase";
 import { useAuth } from "../auth/AuthContext";
 
-const RoomCtx = createContext();
+const RoomContext = createContext(null);
+export const useRoom = () => useContext(RoomContext);
 
 const initialState = {
   roomId: localStorage.getItem("roomId") || null,
-  isCreator: false,
-  memberCount: 0,
   members: [],
+  cart: [],
+  fees: {
+    delivery: 20,
+    packaging: 10,
+    tip: 0,
+  },
+  isCreator: false,
 };
+
+// 🔹 helper to resolve display name (prefer sc_name from localStorage)
+function getDisplayName(user) {
+  const scName = localStorage.getItem("sc_name");
+  if (scName) return scName;
+  return user?.displayName || user?.name || user?.phone || "Anonymous";
+}
 
 function reducer(state, action) {
   switch (action.type) {
     case "SET_ROOM":
-      return { ...state, ...action.payload };
-    case "CLEAR_ROOM":
-      return { roomId: null, isCreator: false, memberCount: 0, members: [] };
+      localStorage.setItem("roomId", action.payload.roomId);
+      return {
+        ...state,
+        roomId: action.payload.roomId,
+        isCreator: action.payload.isCreator ?? false,
+      };
+
+    case "SET_MEMBERS":
+      return { ...state, members: action.payload };
+
+    case "SET_CART":
+      return { ...state, cart: action.payload };
+
+    case "SET_FEES":
+      return { ...state, fees: action.payload };
+
+    case "EXIT_ROOM":
+      localStorage.removeItem("roomId");
+      return { ...initialState, roomId: null, members: [] };
+
     default:
       return state;
   }
@@ -35,105 +65,87 @@ export function RoomProvider({ children }) {
   const { user } = useAuth();
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  // 🔹 Persist to localStorage
-  useEffect(() => {
-    if (state.roomId) {
-      localStorage.setItem("roomId", state.roomId);
-    } else {
-      localStorage.removeItem("roomId");
-    }
-  }, [state.roomId]);
-
-  // 🔹 Subscribe to room members
+  // 🔹 Subscribe to room doc for members, cart, fees
   useEffect(() => {
     if (!state.roomId) return;
-
     const ref = doc(db, "rooms", state.roomId);
+
     const unsub = onSnapshot(ref, (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
-        dispatch({
-          type: "SET_ROOM",
-          payload: {
-            roomId: state.roomId,
-            isCreator: data.isCreator || false,
-            memberCount: data.memberCount || 0,
-            members: data.members || [],
-          },
-        });
-        console.log("👥 Members updated:", data.members || []);
-      }
+      if (!snap.exists()) return;
+      const data = snap.data();
+      dispatch({ type: "SET_MEMBERS", payload: data.members || [] });
+      dispatch({ type: "SET_CART", payload: data.cart || [] });
+      dispatch({ type: "SET_FEES", payload: data.fees || initialState.fees });
     });
 
     return () => unsub();
   }, [state.roomId]);
 
   // 🔹 Create a new room
-  async function createRoom(code, count) {
-    if (!user) throw new Error("Must be logged in");
-
+  async function createRoom(code, memberCount) {
+    if (!user) throw new Error("User not logged in");
     const ref = doc(db, "rooms", code);
+
     await setDoc(ref, {
-      roomId: code,
-      isCreator: true,
-      memberCount: count,
       members: [
-        { id: user.id, name: user.name || user.phone || "Anonymous" },
+        {
+          uid: user.uid,
+          name: getDisplayName(user),
+          paid: false,
+        },
       ],
+      cart: [],
+      fees: initialState.fees,
+      memberCount,
+      createdAt: Date.now(),
     });
 
-    dispatch({
-      type: "SET_ROOM",
-      payload: { roomId: code, isCreator: true, memberCount: count },
-    });
+    dispatch({ type: "SET_ROOM", payload: { roomId: code, isCreator: true } });
   }
 
   // 🔹 Join an existing room
   async function joinRoom(code) {
-    if (!user) throw new Error("Must be logged in");
-
+    if (!user) throw new Error("User not logged in");
     const ref = doc(db, "rooms", code);
-    const snap = await getDoc(ref);
-    if (!snap.exists()) throw new Error("Room not found");
 
     await updateDoc(ref, {
       members: arrayUnion({
-        id: user.id,
-        name: user.name || user.phone || "Anonymous",
+        uid: user.uid,
+        name: getDisplayName(user),
+        paid: false,
       }),
     });
 
-    dispatch({
-      type: "SET_ROOM",
-      payload: { roomId: code, isCreator: false },
-    });
+    dispatch({ type: "SET_ROOM", payload: { roomId: code, isCreator: false } });
   }
 
   // 🔹 Exit current room
   async function exitRoom() {
-    if (state.roomId && user) {
-      try {
-        const ref = doc(db, "rooms", state.roomId);
-        await updateDoc(ref, {
-          members: arrayRemove({
-            id: user.id,
-            name: user.name || user.phone || "Anonymous",
-          }),
-        });
-      } catch (err) {
-        console.warn("Exit room update failed:", err.message);
-      }
-    }
+    if (!user || !state.roomId) return;
+    const ref = doc(db, "rooms", state.roomId);
 
-    dispatch({ type: "CLEAR_ROOM" });
-    localStorage.removeItem("roomId");
+    await updateDoc(ref, {
+      members: arrayRemove({
+        uid: user.uid,
+        name: getDisplayName(user),
+        paid: false,
+      }),
+    });
+
+    dispatch({ type: "EXIT_ROOM" });
   }
 
   return (
-    <RoomCtx.Provider value={{ state, createRoom, joinRoom, exitRoom }}>
+    <RoomContext.Provider
+      value={{
+        state,
+        dispatch,
+        createRoom,
+        joinRoom,
+        exitRoom,
+      }}
+    >
       {children}
-    </RoomCtx.Provider>
+    </RoomContext.Provider>
   );
 }
-
-export const useRoom = () => useContext(RoomCtx);
