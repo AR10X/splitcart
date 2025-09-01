@@ -27,15 +27,44 @@ export default function CheckoutModal({ onClose }) {
   const allPaid =
     roomState.members.length > 0 && roomState.members.every((m) => m.paid);
 
-  // ✅ Listen for allPaid → trigger confetti + redirect
+  // ✅ When allPaid → create order once + show confetti
   useEffect(() => {
-    if (allPaid) {
-      confetti({ particleCount: 200, spread: 70, origin: { y: 0.6 } });
-      setTimeout(() => navigate("/profile"), 2000);
-    }
-  }, [allPaid, navigate]);
+    if (allPaid && roomState.roomId) {
+      (async () => {
+        const orderRef = doc(db, "orders", roomState.roomId); // ✅ one order per room
+        const snap = await getDoc(orderRef);
 
-  // ✅ Confirm payment
+        if (!snap.exists()) {
+          await setDoc(orderRef, {
+            roomId: roomState.roomId,
+            items: cartState.items,
+            total:
+              cartState.items.reduce((s, i) => s + i.price * i.qty, 0) +
+              totalFees,
+            createdAt: Date.now(),
+            members: roomState.members,
+            memberIds: roomState.members.map((m) => String(m.uid)),
+            status: "Placed",
+          });
+        }
+
+        // 🎉 Confetti for everyone
+        confetti({ particleCount: 200, spread: 70, origin: { y: 0.6 } });
+
+        // Redirect
+        setTimeout(() => navigate("/profile"), 2000);
+      })();
+    }
+  }, [
+    allPaid,
+    cartState.items,
+    navigate,
+    roomState.members,
+    roomState.roomId,
+    totalFees,
+  ]);
+
+  // ✅ Confirm payment for current user
   async function confirmPayment() {
     if (!roomState.roomId || !user?.uid) return;
     const ref = doc(db, "rooms", roomState.roomId);
@@ -48,17 +77,6 @@ export default function CheckoutModal({ onClose }) {
     );
 
     await updateDoc(ref, { members: newMembers });
-
-    // Save order in Firestore (once per room, overwrite if needed)
-    const orderRef = doc(db, "orders", `${roomState.roomId}-${Date.now()}`);
-    await setDoc(orderRef, {
-      roomId: roomState.roomId,
-      items: cartState.items,
-      total:
-        cartState.items.reduce((s, i) => s + i.price * i.qty, 0) + totalFees,
-      createdAt: Date.now(),
-      members: newMembers,
-    });
   }
 
   return (
