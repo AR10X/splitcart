@@ -5,6 +5,10 @@ import AuthIllustration from "../assets/auth-illustration.svg"; // put an SVG he
 const TERMS_URL = "/legal/terms";
 const PRIVACY_URL = "/legal/privacy";
 
+// --- DEMO SETTINGS ---
+const DEMO_NUMBERS = ["+919999999901", "+919999999902"];
+const DEMO_OTP = "123456";
+
 export default function AuthFlow({ onDone }) {
   const [stage, setStage] = useState("phone"); // "phone" | "otp" | "name"
   const [phone, setPhone] = useState("");
@@ -26,15 +30,33 @@ export default function AuthFlow({ onDone }) {
   async function handleSendOtp(e) {
     e.preventDefault();
     try {
-      setErr(""); setLoading(true);
+      setErr(""); 
+      setLoading(true);
+
       const e164 = toE164India(phone);
+
+      // --- DEMO restriction: allow only test numbers ---
+      if (!DEMO_NUMBERS.includes(e164)) {
+        throw new Error(
+          `Demo mode: Only test numbers 9999999901 or 9999999902 can be used`
+        );
+      }
+
       await sendOtp(e164);
       setPhone(e164);
-      setOtp(["", "", "", "", "", ""]);
+
+      // --- DEMO: prefill OTP ---
+      setOtp(DEMO_OTP.split("")); // ["1","2","3","4","5","6"]
+
       setStage("otp");
-    } catch (e) { setErr(e.message || "Failed to send OTP"); }
-    finally { setLoading(false); }
+    } catch (e) { 
+      setErr(e.message || "Failed to send OTP"); 
+    }
+    finally { 
+      setLoading(false); 
+    }
   }
+
 
   // verify
   async function handleVerify(e) {
@@ -97,7 +119,17 @@ export default function AuthFlow({ onDone }) {
         </span>
         <span className="text-green-600 text-2xl" aria-hidden>🛒</span>
       </div>
-      <p className="text-green-600 font-medium mb-6">Groceries, split easy 🚀</p>
+      <p className="text-green-600 font-medium mb-2">Groceries, split easy 🚀</p>
+
+      {/* --- DEMO NOTICE (below subtitle, above form) --- */}
+      <div className="w-full max-w-xs mb-6 rounded-lg border border-green-200 bg-green-50 p-3 text-xs text-gray-800">
+        <p className="font-semibold text-green-800">Demo login (free Firebase tier)</p>
+        <p className="mt-1">
+          Phone login works only with these test numbers:&nbsp;
+          <code className="font-mono">9999999901</code> or <code className="font-mono">9999999902</code>.
+          OTP is always <code className="font-mono">{DEMO_OTP}</code>.
+        </p>
+      </div>
 
       {/* Step dots */}
       <div className="flex gap-1.5 mb-6" aria-hidden>
@@ -113,7 +145,7 @@ export default function AuthFlow({ onDone }) {
             <span className="text-gray-600 mr-2">+91</span>
             <input
               className="flex-1 outline-none "
-              placeholder="98765 43210"
+              placeholder="9999999901"
               value={phone}
               onChange={(e)=>setPhone(e.target.value)}
               inputMode="tel"
@@ -160,6 +192,13 @@ export default function AuthFlow({ onDone }) {
               />
             ))}
           </div>
+
+          {/* DEMO hint under the OTP boxes when applicable */}
+          {DEMO_NUMBERS.includes(phone) && (
+            <p className="text-xs text-gray-500 mb-2">
+              Demo number detected — OTP is prefilled as <code className="font-mono">{DEMO_OTP}</code>.
+            </p>
+          )}
 
           {err && <p className="text-red-500 text-sm mb-2">{err}</p>}
 
