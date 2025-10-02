@@ -26,13 +26,13 @@ Built with **React, Firebase, and TailwindCSS**.
 ## 📸 Screenshots
 
 ### Landing Page
-![Landing Page](docs/landing.jpg)
+![Landing Page](/public/docs/landing.jpg)
 
 ### Collaborative Cart
-![Cart Page](docs/cart.jpg)
+![Cart Page](/public/docs/cart.jpg)
 
 ### Orders
-![Orders Page](docs/orders.jpg)
+![Orders Page](/public/docs/orders.jpg)
 
 ---
 
