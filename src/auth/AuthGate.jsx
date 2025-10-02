@@ -1,1 +1,0 @@
-export default function AuthGate() { return <div>AuthGate</div>; }

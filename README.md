@@ -1,106 +1,51 @@
 # 🛒 SplitCart
 
-**The Social Way to Order Groceries Together**
+A collaborative cart application where multiple people can join a shared cart, add items, and split fees fairly.  
+Built with **React, Firebase, and TailwindCSS**.
 
 ---
 
-## 🚨 The Problem
+## 🚀 Features
 
-Grocery ordering today is **individual, repetitive, and inefficient**:
-
-* Friends or flatmates order separately → higher delivery fees.
-* No easy way to split bills fairly.
-* Group ordering apps don’t exist — people hack it with WhatsApp + UPI.
-
----
-
-## 💡 Our Solution — SplitCart
-
-**SplitCart** turns grocery ordering into a **shared experience**:
-
-* Create a cart → share a simple code → invite friends in seconds.
-* Each member **adds their own items**.
-* Fees are **split automatically**, no manual math.
-* Everyone pays their share → order placed together. 🎉
-
-> **Think Blinkit + Splitwise.**
-> Groceries, but social, collaborative, and frictionless.
+- **Authentication (Firebase Phone Auth)** – login using test numbers.  
+- **Create / Join Cart** – generate a cart code and share with others.  
+- **Shared Cart** – every member can add their own items in real-time.  
+- **Automatic Split** – fees are divided equally across members.  
+- **Order Tracking** – checkout creates an order record with status.
 
 ---
 
-## ✨ Why Now?
+## 🛠️ Tech Stack
 
-* **Quick commerce is exploding** in India (Blinkit, Zepto, Swiggy Instamart).
-* **Shared living (PGs, hostels, flatmates)** is the norm for Gen Z & young professionals.
-* **Digital payments** (UPI) make real-time split billing possible.
-
----
-
-## 🖼 Product Demo
-
-### 1. Landing Page (Create / Join a Cart)
-
-<img src="docs/landing.png" width="600">  
-
-### 2. Collaborative Cart (Per-user items + split fees)
-
-<img src="docs/cart.png" width="600">  
-
-### 3. Order Tracking (Blinkit-style timeline)
-
-<img src="docs/orders.png" width="600">  
+- **Frontend:** React + Vite + TailwindCSS  
+- **Backend:** Firebase Auth + Firestore  
+- **Hosting:** Vercel  
 
 ---
 
-## 🔥 Traction (Prototype Stage)
+## 📸 Screenshots
 
-* Built **fully working MVP** with real-time cart sharing.
-* Deployed on **Vercel** with Firebase backend.
-* Early user testing with flatmate groups:
+### Landing Page
+![Landing Page](docs/landing.jpg)
 
-  * 90% said it saved time vs ordering separately.
-  * Average **delivery fee saved: ₹60/order**.
+### Collaborative Cart
+![Cart Page](docs/cart.jpg)
 
----
-
-## 🌍 Market Opportunity
-
-* India’s **quick commerce market = \$45B (2025)**.
-* SplitCart taps into **shared households, PGs, student hostels** = **tens of millions of daily orders**.
-* Potential B2B extension: corporate group canteens, office pantry supplies.
+### Orders
+![Orders Page](docs/orders.jpg)
 
 ---
 
-## 🏗 Tech & Design
+## ⚡ How It Works
 
-* ⚛️ React + Vite + Tailwind → fast, modern frontend
-* 🔥 Firebase (Auth + Firestore) → real-time sync
-* 🎨 Blinkit-inspired UI → familiar, consumer-ready
-* 🚀 Vercel hosting → scalable, instant deploys
-
----
-
-## 🚦 Roadmap
-
-* ✅ MVP launch (create/join rooms, add items, split checkout)
-* 🔜 UPI / Razorpay integration for **real payments**
-* 🔜 Push notifications → “Friend added 2 items”
-* 🔜 Personalized deals & offers → monetization
-* 🔮 Expansion → offices, canteens, shared kitchens
+1. User logs in with a phone number (Firebase test numbers).  
+2. One user creates a new cart → gets a cart code.  
+3. Other users join using the code.  
+4. Members add items → cart syncs in real-time.  
+5. Checkout splits fees and creates an order record.
 
 ---
 
-## 🧑‍🤝‍🧑 Team
+## 📂 Project Status
 
-* **Abdul Rehaman** — Engineer, built SplitCart MVP from scratch
-* Advisors with experience in **quick commerce & SaaS scaling**
-
----
-
-## 📢 Call to Action
-
-SplitCart is more than a cart — it’s the **future of collaborative commerce**.
-We’re looking for **early believers, investors, and partners** to scale this vision.
-
----
-
+The project is complete as an **MVP implementation** with working flows for create/join cart, item sync, and checkout.

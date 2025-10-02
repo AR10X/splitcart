@@ -6,7 +6,7 @@ const TERMS_URL = "/legal/terms";
 const PRIVACY_URL = "/legal/privacy";
 
 // --- DEMO SETTINGS ---
-const DEMO_NUMBERS = ["+919999999901", "+919999999902"];
+const DEMO_NUMBERS = ["+919876543210", "+911234567890"];
 const DEMO_OTP = "123456";
 
 export default function AuthFlow({ onDone }) {
@@ -38,7 +38,7 @@ export default function AuthFlow({ onDone }) {
       // --- DEMO restriction: allow only test numbers ---
       if (!DEMO_NUMBERS.includes(e164)) {
         throw new Error(
-          `Demo mode: Only test numbers 9999999901 or 9999999902 can be used`
+          `Demo mode: Only test numbers 9876543210 or 1234567890 can be used`
         );
       }
 
@@ -126,7 +126,7 @@ export default function AuthFlow({ onDone }) {
         <p className="font-semibold text-green-800">Demo login (free Firebase tier)</p>
         <p className="mt-1">
           Phone login works only with these test numbers:&nbsp;
-          <code className="font-mono">9999999901</code> or <code className="font-mono">9999999902</code>.
+          <code className="font-mono">9876543210</code> or <code className="font-mono">1234567890</code>.
           OTP is always <code className="font-mono">{DEMO_OTP}</code>.
         </p>
       </div>
@@ -145,7 +145,7 @@ export default function AuthFlow({ onDone }) {
             <span className="text-gray-600 mr-2">+91</span>
             <input
               className="flex-1 outline-none "
-              placeholder="9999999901"
+              placeholder="9876543210"
               value={phone}
               onChange={(e)=>setPhone(e.target.value)}
               inputMode="tel"
