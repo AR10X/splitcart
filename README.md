@@ -31,6 +31,9 @@ Built with **React, Firebase, and TailwindCSS**.
 ### Collaborative Cart
 ![Cart Page](/public/docs/cart.jpg)
 
+### Split Payment
+![Payment](/public/docs/payment.jpg)
+
 ### Orders
 ![Orders Page](/public/docs/orders.jpg)
 
